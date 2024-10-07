@@ -1,0 +1,15 @@
+{
+  "type": "module",
+  "name": "crm-api",
+  "version": "1.0.0",
+  "description": "node crm api",
+  "main": "index.js",
+  "scripts": {
+    "test": "node-test"
+  },
+  "author": "ATT273",
+  "license": "ISC",
+  "dependencies": {
+    "express": "^4.21.0"
+  }
+}
