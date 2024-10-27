@@ -31,6 +31,7 @@ const START_SERVER = async () => {
   })
 }
 
+// CONNECT TO DATABASE
 CONNECT_DB()
 .then(() => console.log('Connected to Mongo database'))
 .then(() => START_SERVER())
