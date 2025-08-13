@@ -13,11 +13,19 @@ const RoleSchema = new mongoose.Schema({
   },
   active: {
     type: Boolean,
-    default: false,
+    default: true,
+  },
+  description: {
+    type: String,
+    default: '',
+  },
+  permissions: {
+    type: String,
+    default: "{}"
   },
 }, { timestamps: true });
 
-RoleSchema.statics.create = async function (name, code) {
+RoleSchema.statics.storeRole = async function ({ name, code, active, permissions, description }) {
 
   if (!name || !code) {
     throw new Error('Name and code are required');
@@ -28,22 +36,21 @@ RoleSchema.statics.create = async function (name, code) {
     throw new Error('This code already exists');
   }
 
-  const role = await this.create({ name, code });
+  const role = await this.create({ name, code, active, permissions, description });
   return role;
 }
 
-RoleSchema.statics.update = async function (data) {
-
-  if (!data.name || !data.code) {
-    throw new Error('Name and code are required');
+RoleSchema.statics.updateRole = async function ({ description, name, permissions, active, id }) {
+  const role = await this.findById(id);
+  if (!role) {
+    throw new Error('No roles found');
   }
-
-  const existingRole = await this.findOne({ data.code });
-  if (existingRole) {
-    throw new Error('This code already exists');
-  }
-
-  const role = await this.({ name, code });
-  return role;
+  role.name = name;
+  role.description = description;
+  role.active = active;
+  role.permissions = permissions;
+  await role.save().then((updatedRole) => {
+    return updatedRole;
+  });
 }
-export default mongoose.model('users', UserSchema);
+export default mongoose.model('roles', RoleSchema);

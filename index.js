@@ -3,6 +3,8 @@ import { CONNECT_DB, GET_DB } from './src/config/mongodb.js';
 import exitHook from 'async-exit-hook'
 import userRouter from './src/routes/users.js';
 import authRouter from './src/routes/auth.js';
+import productRouter from './src/routes/product.js';
+import roleRouter from './src/routes/role.js';
 import cors from 'cors';
 
 const START_SERVER = async () => {
@@ -20,7 +22,9 @@ const START_SERVER = async () => {
 
 
   app.use('/api/users', userRouter);
+  app.use('/api/products', productRouter);
   app.use('/api/auth', authRouter);
+  app.use('/api/roles', roleRouter);
 
   app.listen(port, host, () => {
     console.log(`Server is running on http://${host}:${port}`);

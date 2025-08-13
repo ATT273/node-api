@@ -32,7 +32,7 @@ export const getUserDetails = async (req, res) => {
   }
 }
 
-export const updateUser = async (req, res) => {
+export const updatProfile = async (req, res) => {
   const { email, name, dob } = req.body;
   const { id } = req.params;
   try {
@@ -74,5 +74,23 @@ export const updatePassword = async (req, res) => {
     });
   } catch (error) {
     res.status(400).json({ status: 404, message: error.message });
+  }
+}
+
+export const assignRole = async (req, res) => {
+  const { role } = req.body;
+  const { id } = req.params;
+  try {
+    const user = await User.findOne({ _id: id });
+    if (!user) {
+      res.status(404).json({ status: 404, message: 'No users found' })
+      return
+    }
+    user.role_cd = role;
+    await user.save().then((updatedUser) => {
+      res.status(200).json({ status: 200, data: updatedUser });
+    });
+  } catch (error) {
+    res.status(500).json({ status: 500, message: error.message });
   }
 }
