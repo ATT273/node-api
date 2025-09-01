@@ -1,8 +1,10 @@
 import express from 'express';
-import { CONNECT_DB, GET_DB } from './src/config/mongodb.js';
+import { CONNECT_DB, GET_DB } from './src/config/mongodb';
 import exitHook from 'async-exit-hook'
-import userRouter from './src/routes/users.js';
-import authRouter from './src/routes/auth.js';
+import userRouter from './src/routes/users';
+import authRouter from './src/routes/auth';
+import productRouter from './src/routes/product';
+import roleRouter from './src/routes/role';
 import cors from 'cors';
 
 const START_SERVER = async () => {
@@ -20,7 +22,9 @@ const START_SERVER = async () => {
 
 
   app.use('/api/users', userRouter);
+  app.use('/api/products', productRouter);
   app.use('/api/auth', authRouter);
+  app.use('/api/roles', roleRouter);
 
   app.listen(port, host, () => {
     console.log(`Server is running on http://${host}:${port}`);
@@ -31,6 +35,7 @@ const START_SERVER = async () => {
   })
 }
 
+// CONNECT TO DATABASE
 CONNECT_DB()
 .then(() => console.log('Connected to Mongo database'))
 .then(() => START_SERVER())
