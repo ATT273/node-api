@@ -1,6 +1,10 @@
-import mongoose from "mongoose";
-import Product from "../models/productModel.js";
-import ProductSKU from "../models/productSKUModel.js";
+import { Types } from "mongoose";
+import Product, { IProductPayload } from "../models/productModel";
+import ProductSKU, {
+  IProductSku,
+  IProductSkuPayload,
+} from "../models/productSKUModel";
+import { validateProductSKU } from "../utils/validate.util";
 
 export const getProductList = async (req, res) => {
   // const { authorization } = req.headers
@@ -20,7 +24,7 @@ export const getProductList = async (req, res) => {
 export const getProductDetail = async (req, res) => {
   const { id } = req.params;
   try {
-    const product = await Product.findById(id);
+    const product = await Product.getProductDetails(id);
     if (!product) {
       res.status(404).json({ status: 404, message: "No products found" });
       return;
@@ -32,17 +36,28 @@ export const getProductDetail = async (req, res) => {
 };
 
 export const createProduct = async (req, res) => {
-  const { name, main_category, sub_category, price, imp_price, qty, size } =
-    req.body;
+  const {
+    name,
+    mainCategory,
+    subCategory,
+    price,
+    importPrice,
+    qty,
+    sizes,
+    description,
+    unit,
+  }: IProductPayload = req.body;
   try {
     const product = await Product.storeProduct({
       name,
-      main_category,
-      sub_category,
+      mainCategory,
+      subCategory,
       price,
-      imp_price,
+      importPrice,
       qty,
-      size,
+      sizes,
+      description,
+      unit,
     });
     res.status(200).json({ status: 200, data: product });
   } catch (error) {
@@ -53,28 +68,29 @@ export const createProduct = async (req, res) => {
 export const updateProduct = async (req, res) => {
   const {
     name,
-    main_category,
-    sub_category,
+    mainCategory,
+    subCategory,
     price,
-    imp_price,
+    importPrice,
     qty,
-    size,
+    sizes,
     description,
+    unit,
   } = req.body;
   const { id } = req.params;
   try {
     const product = await Product.updateProduct({
       id,
       name,
-      main_category,
-      sub_category,
+      mainCategory,
+      subCategory,
       price,
-      imp_price,
+      importPrice,
       qty,
-      size,
+      sizes,
       description,
+      unit,
     });
-    console.log("product", product);
     res.status(200).json({ status: 200, message: "success", data: product });
   } catch (error) {
     console.log("error", error);
@@ -90,7 +106,7 @@ export const deleteProduct = async (req, res) => {
       res.status(404).json({ status: 404, message: "No products found" });
       return;
     }
-    const product = await Product.deleteOne({ _id: id });
+    await Product.deleteOne({ _id: id });
     res.status(200).json({ status: 200, message: "Product has been deleted" });
   } catch (error) {
     if (error.name === "CastError") {
@@ -104,35 +120,59 @@ export const deleteProduct = async (req, res) => {
 };
 
 export const updateSKU = async (req, res) => {
-  const { productId, sku, price, qty, properties } = req.body;
+  const data: IProductSkuPayload[] = req.body;
   const { id } = req.params;
+  if (!id) {
+    res.status(400).json({ status: 400, message: "Product ID is required" });
+    return;
+  }
+  const { errorMessage, index } = validateProductSKU(data);
+  if (errorMessage) {
+    res
+      .status(400)
+      .json({ status: 400, message: `variant at ${index}: ${errorMessage}` });
+    return;
+  }
+  const mappedData = data.map((item) => ({
+    ...item,
+    productId: id,
+  }));
+
   try {
-    const product = await ProductSKU.updateProductSKU({
-      id,
-      productId,
-      sku,
-      price,
-      qty,
-      properties,
-    });
-    res.status(200).json({ status: 200, message: "success", data: product });
+    const result = await ProductSKU.updateProductSKU(mappedData);
+    res.status(200).json({ status: 200, message: "success", data: result });
   } catch (error) {
     res.status(400).json({ status: 404, message: error.message });
   }
 };
+
 export const createSKU = async (req, res) => {
-  const { productId, sku, price, qty, properties } = req.body;
+  const data: IProductSkuPayload[] = req.body;
   const { id } = req.params;
+  if (!id) {
+    res.status(400).json({ status: 400, message: "Product ID is required" });
+    return;
+  }
+  const { errorMessage, index } = validateProductSKU(data);
+  if (errorMessage) {
+    res
+      .status(400)
+      .json({ status: 400, message: `variant at ${index}: ${errorMessage}` });
+    return;
+  }
+
+  const mappedData = data.map((item) => {
+    return {
+      ...item,
+      productId: id,
+    };
+  });
+
   try {
-    const product = await ProductSKU.storeProductSKU({
-      id,
-      productId,
-      sku,
-      price,
-      qty,
-      properties,
-    });
-    res.status(200).json({ status: 200, message: "success", data: product });
+    const productSkus = await ProductSKU.storeProductSKU(mappedData);
+    res
+      .status(200)
+      .json({ status: 200, message: "success", data: productSkus });
   } catch (error) {
     res.status(400).json({ status: 404, message: error.message });
   }

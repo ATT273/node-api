@@ -1,10 +1,10 @@
 import express from 'express';
-import { CONNECT_DB, GET_DB } from './src/config/mongodb.js';
+import { CONNECT_DB, GET_DB } from './src/config/mongodb';
 import exitHook from 'async-exit-hook'
-import userRouter from './src/routes/users.js';
-import authRouter from './src/routes/auth.js';
-import productRouter from './src/routes/product.js';
-import roleRouter from './src/routes/role.js';
+import userRouter from './src/routes/users';
+import authRouter from './src/routes/auth';
+import productRouter from './src/routes/product';
+import roleRouter from './src/routes/role';
 import cors from 'cors';
 
 const START_SERVER = async () => {

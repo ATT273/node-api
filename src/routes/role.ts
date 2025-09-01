@@ -1,7 +1,6 @@
 import express from 'express';
-import Role from '../models/roleModel.js';
-import requireAuth from '../middleware/requireAuth.js';
-import { createRole, deleteRole, getRoleList, updateRole } from '../controllers/roleConntroller.js';
+import requireAuth from '../middleware/requireAuth';
+import { createRole, deleteRole, getRoleList, updateRole } from '../controllers/roleConntroller';
 
 const router = express.Router();
 router.use(requireAuth);

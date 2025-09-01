@@ -1,11 +1,28 @@
-import mongoose from 'mongoose';
-import User from '../models/userModel.js';
-import jwt from 'jsonwebtoken';
+import User from '../models/userModel';
 import bcrypt from 'bcrypt';
+import { Request, Response } from 'express';
 
-export const getUserList = async (req, res) => {
+interface UserDocument {
+  _id: string;
+  email: string;
+  name: string;
+  dob: string;
+  roleCode: string;
+  password?: string;
+  save: () => Promise<UserDocument>;
+}
+
+interface GetUserDetailsRequest extends Request {
+  params: {
+    id: string;
+  };
+}
+
+interface GetUserDetailsResponse extends Response {}
+
+export const getUserList = async (req: Request, res: Response): Promise<void> => {
   const { authorization } = req.headers
-  const claim = jwt.decode(authorization.split(' ')[1]);
+  // const claim = jwt.decode(authorization.split(' ')[1]);
   try {
     const users = await User.find();
     if (!users) {
@@ -13,26 +30,40 @@ export const getUserList = async (req, res) => {
       return
     }
     res.status(200).json({ status: 200, data: [...users] });
-  } catch (error) {
+  } catch (error: any) {
     res.status(400).json({ status: 404, message: error.message });
   }
 }
 
-export const getUserDetails = async (req, res) => {
+
+
+export const getUserDetails = async (
+  req: GetUserDetailsRequest,
+  res: GetUserDetailsResponse
+): Promise<void> => {
   const { id } = req.params;
   try {
-    const user = await User.findById(id);
+    const user: UserDocument | null = await User.findById(id);
     if (!user) {
-      res.status(404).json({ status: 404, message: 'No users found' })
-      return
+      res.status(404).json({ status: 404, message: 'No users found' });
+      return;
     }
-    res.status(200).json({ status: 200, data: { email: user.email, name: user.name, dob: user.dob, id: user._id, role: user.role_cd } });
-  } catch (error) {
+    res.status(200).json({
+      status: 200,
+      data: {
+        email: user.email,
+        name: user.name,
+        dob: user.dob,
+        id: user._id,
+        role: user.roleCode,
+      },
+    });
+  } catch (error: any) {
     res.status(400).json({ status: 404, message: error.message });
   }
-}
+};
 
-export const updatProfile = async (req, res) => {
+export const updateProfile = async (req: Request, res: Response): Promise<void> => {
   const { email, name, dob } = req.body;
   const { id } = req.params;
   try {
@@ -48,12 +79,12 @@ export const updatProfile = async (req, res) => {
     await user.save().then((updatedUser) => {
       res.status(200).json({ status: 200, data: updatedUser });
     });
-  } catch (error) {
+  } catch (error: any) {
     res.status(400).json({ status: 404, message: error.message });
   }
 }
 
-export const updatePassword = async (req, res) => {
+export const updatePassword = async (req: Request, res: Response): Promise<void> => {
   const { newPassword } = req.body;
   const { id } = req.params;
   if (!newPassword) {
@@ -72,12 +103,12 @@ export const updatePassword = async (req, res) => {
     await user.save().then((updatedUser) => {
       res.status(200).json({ status: 200, data: updatedUser });
     });
-  } catch (error) {
+  } catch (error: any) {
     res.status(400).json({ status: 404, message: error.message });
   }
 }
 
-export const assignRole = async (req, res) => {
+export const assignRole = async (req: Request, res: Response): Promise<void> => {
   const { role } = req.body;
   const { id } = req.params;
   try {
@@ -86,11 +117,11 @@ export const assignRole = async (req, res) => {
       res.status(404).json({ status: 404, message: 'No users found' })
       return
     }
-    user.role_cd = role;
+    user.roleCode = role;
     await user.save().then((updatedUser) => {
       res.status(200).json({ status: 200, data: updatedUser });
     });
-  } catch (error) {
+  } catch (error: any) {
     res.status(500).json({ status: 500, message: error.message });
   }
 }

@@ -1,6 +1,5 @@
 import express from "express";
-import Product from "../models/productModel.js";
-import requireAuth from "../middleware/requireAuth.js";
+import requireAuth from "../middleware/requireAuth";
 import {
   getProductList,
   getProductDetail,
@@ -9,7 +8,7 @@ import {
   updateProduct,
   createSKU,
   updateSKU,
-} from "../controllers/productController.js";
+} from "../controllers/productController";
 
 const router = express.Router();
 router.use(requireAuth);
