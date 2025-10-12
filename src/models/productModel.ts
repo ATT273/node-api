@@ -24,12 +24,16 @@ export interface IProductPayload {
   importPrice: number;
   qty: number;
   sizes: string[];
+  images: IProductImage[];
 }
 
+export interface IProductImage {
+  url: string;
+  name: string;
+  id: number;
+}
 interface IProductModel extends Model<IProduct> {
-  getProductDetails(
-    id: string
-  ): Promise<(IProduct & { skus: IProductSku[] }) | null>;
+  getProductDetails(id: string): Promise<(IProduct & { skus: IProductSku[] }) | null>;
   storeProduct(product: IProductPayload): Promise<IProduct | null>;
   updateProduct(product: IProductPayload): Promise<IProduct | null>;
 }
@@ -69,6 +73,10 @@ const ProductSchema = new Schema(
       default: 0,
     },
     sizes: {
+      type: Array,
+      default: [],
+    },
+    images: {
       type: Array,
       default: [],
     },
@@ -131,6 +139,8 @@ ProductSchema.statics.updateProduct = async function (data: IProductPayload) {
   product.qty = data.qty;
   product.size = data.sizes;
   product.description = data.description;
+  product.unit = data.unit;
+  product.images = data.images;
   await product.save().then((updatedProduct: IProduct) => {
     return updatedProduct;
   });
@@ -148,8 +158,5 @@ ProductSchema.statics.getProductDetails = async function (id: string) {
   return { ...product, skus };
 };
 
-const Product = mongoose.model<IProduct, IProductModel>(
-  "Product",
-  ProductSchema
-);
+const Product = mongoose.model<IProduct, IProductModel>("Product", ProductSchema);
 export default Product;

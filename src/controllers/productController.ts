@@ -1,9 +1,6 @@
-import { Types } from "mongoose";
+import { ObjectId } from "mongodb";
 import Product, { IProductPayload } from "../models/productModel";
-import ProductSKU, {
-  IProductSku,
-  IProductSkuPayload,
-} from "../models/productSKUModel";
+import ProductSKU, { IProductSku, IProductSkuPayload } from "../models/productSKUModel";
 import { validateProductSKU } from "../utils/validate.util";
 
 export const getProductList = async (req, res) => {
@@ -46,6 +43,7 @@ export const createProduct = async (req, res) => {
     sizes,
     description,
     unit,
+    images,
   }: IProductPayload = req.body;
   try {
     const product = await Product.storeProduct({
@@ -58,6 +56,7 @@ export const createProduct = async (req, res) => {
       sizes,
       description,
       unit,
+      images,
     });
     res.status(200).json({ status: 200, data: product });
   } catch (error) {
@@ -66,17 +65,7 @@ export const createProduct = async (req, res) => {
 };
 
 export const updateProduct = async (req, res) => {
-  const {
-    name,
-    mainCategory,
-    subCategory,
-    price,
-    importPrice,
-    qty,
-    sizes,
-    description,
-    unit,
-  } = req.body;
+  const { name, mainCategory, subCategory, price, importPrice, qty, sizes, description, unit, images } = req.body;
   const { id } = req.params;
   try {
     const product = await Product.updateProduct({
@@ -90,6 +79,7 @@ export const updateProduct = async (req, res) => {
       sizes,
       description,
       unit,
+      images,
     });
     res.status(200).json({ status: 200, message: "success", data: product });
   } catch (error) {
@@ -110,9 +100,7 @@ export const deleteProduct = async (req, res) => {
     res.status(200).json({ status: 200, message: "Product has been deleted" });
   } catch (error) {
     if (error.name === "CastError") {
-      res
-        .status(404)
-        .json({ status: 404, message: "Invalid id. No products found" });
+      res.status(404).json({ status: 404, message: "Invalid id. No products found" });
       return;
     }
     res.status(500).json({ status: 500, message: error.message });
@@ -128,15 +116,16 @@ export const updateSKU = async (req, res) => {
   }
   const { errorMessage, index } = validateProductSKU(data);
   if (errorMessage) {
-    res
-      .status(400)
-      .json({ status: 400, message: `variant at ${index}: ${errorMessage}` });
+    res.status(400).json({ status: 400, message: `variant at ${index}: ${errorMessage}` });
     return;
   }
-  const mappedData = data.map((item) => ({
-    ...item,
-    productId: id,
-  }));
+  const mappedData = data.map((item) => {
+    return {
+      ...item,
+      _id: new ObjectId(item.id), // Map 'id' to '_id' for existing SKUs
+      productId: id,
+    };
+  });
 
   try {
     const result = await ProductSKU.updateProductSKU(mappedData);
@@ -155,9 +144,7 @@ export const createSKU = async (req, res) => {
   }
   const { errorMessage, index } = validateProductSKU(data);
   if (errorMessage) {
-    res
-      .status(400)
-      .json({ status: 400, message: `variant at ${index}: ${errorMessage}` });
+    res.status(400).json({ status: 400, message: `variant at ${index}: ${errorMessage}` });
     return;
   }
 
@@ -170,9 +157,7 @@ export const createSKU = async (req, res) => {
 
   try {
     const productSkus = await ProductSKU.storeProductSKU(mappedData);
-    res
-      .status(200)
-      .json({ status: 200, message: "success", data: productSkus });
+    res.status(200).json({ status: 200, message: "success", data: productSkus });
   } catch (error) {
     res.status(400).json({ status: 404, message: error.message });
   }
