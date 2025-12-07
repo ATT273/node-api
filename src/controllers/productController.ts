@@ -1,6 +1,6 @@
-import { Types } from "mongoose";
-import Product, { IProductPayload, IProductResponse } from "../models/productModel";
-import ProductSKU, { IProductSku, IProductSkuPayload } from "../models/productSKUModel";
+import { ObjectId } from "mongodb";
+import Product, { IProductPayload } from "../models/productModel";
+import ProductSKU, { IProductSkuPayload } from "../models/productSKUModel";
 import { validateProductSKU } from "../utils/validate.util";
 
 export const getProductList = async (req, res) => {
@@ -31,8 +31,18 @@ export const getProductDetail = async (req, res) => {
 };
 
 export const createProduct = async (req, res) => {
-  const { name, mainCategory, subCategory, price, importPrice, qty, sizes, description, unit }: IProductPayload =
-    req.body;
+  const {
+    name,
+    mainCategory,
+    subCategory,
+    price,
+    importPrice,
+    qty,
+    sizes,
+    description,
+    unit,
+    images,
+  }: IProductPayload = req.body;
   try {
     const product = await Product.storeProduct({
       name,
@@ -44,6 +54,7 @@ export const createProduct = async (req, res) => {
       sizes,
       description,
       unit,
+      images,
     });
     res.status(200).json({ status: 200, data: product });
   } catch (error) {
@@ -52,7 +63,7 @@ export const createProduct = async (req, res) => {
 };
 
 export const updateProduct = async (req, res) => {
-  const { name, mainCategory, subCategory, price, importPrice, qty, sizes, description, unit } = req.body;
+  const { name, mainCategory, subCategory, price, importPrice, qty, sizes, description, unit, images } = req.body;
   const { id } = req.params;
   try {
     const product = await Product.updateProduct({
@@ -66,6 +77,7 @@ export const updateProduct = async (req, res) => {
       sizes,
       description,
       unit,
+      images,
     });
     res.status(200).json({ status: 200, message: "success", data: product });
   } catch (error) {
@@ -105,10 +117,13 @@ export const updateSKU = async (req, res) => {
     res.status(400).json({ status: 400, message: `variant at ${index}: ${errorMessage}` });
     return;
   }
-  const mappedData = data.map((item) => ({
-    ...item,
-    productId: id,
-  }));
+  const mappedData = data.map((item) => {
+    return {
+      ...item,
+      _id: new ObjectId(item.id), // Map 'id' to '_id' for existing SKUs
+      productId: id,
+    };
+  });
 
   try {
     const result = await ProductSKU.updateProductSKU(mappedData);

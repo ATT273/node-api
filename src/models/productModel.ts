@@ -38,6 +38,7 @@ export interface IProductPayload {
   importPrice: number;
   qty: number;
   sizes: string[];
+  images: IProductImage[];
 }
 
 export interface IPaginatedResult<T> {
@@ -45,6 +46,11 @@ export interface IPaginatedResult<T> {
   meta: IBaseMetadata;
 }
 
+export interface IProductImage {
+  url: string;
+  name: string;
+  id: number;
+}
 interface IProductModel extends Model<IProduct> {
   getProductDetails(id: string): Promise<(IProduct & { skus: IProductSku[] }) | null>;
   storeProduct(product: IProductPayload): Promise<IProduct | null>;
@@ -87,6 +93,10 @@ const ProductSchema = new Schema(
       default: 0,
     },
     sizes: {
+      type: Array,
+      default: [],
+    },
+    images: {
       type: Array,
       default: [],
     },
@@ -214,6 +224,8 @@ ProductSchema.statics.updateProduct = async function (data: IProductPayload) {
   product.qty = data.qty;
   product.size = data.sizes;
   product.description = data.description;
+  product.unit = data.unit;
+  product.images = data.images;
   await product.save().then((updatedProduct: IProduct) => {
     return updatedProduct;
   });
