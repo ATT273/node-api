@@ -1,18 +1,16 @@
 import { ObjectId } from "mongodb";
 import Product, { IProductPayload } from "../models/productModel";
-import ProductSKU, { IProductSku, IProductSkuPayload } from "../models/productSKUModel";
+import ProductSKU, { IProductSkuPayload } from "../models/productSKUModel";
 import { validateProductSKU } from "../utils/validate.util";
 
 export const getProductList = async (req, res) => {
-  // const { authorization } = req.headers
-  // const claim = jwt.decode(authorization.split(' ')[1]);
   try {
-    const products = await Product.find();
+    const products = await Product.getList(req.query);
     if (!products) {
       res.status(404).json({ status: 404, message: "No products found" });
       return;
     }
-    res.status(200).json({ status: 200, data: [...products] });
+    res.status(200).json({ status: 200, data: products });
   } catch (error) {
     res.status(400).json({ status: 404, message: error.message });
   }

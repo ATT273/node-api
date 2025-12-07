@@ -14,11 +14,10 @@ const requireAuth = async (req: AuthRequest, res: Response, next: Function) => {
   const token = authorization.split(" ")[1];
   try {
     const verify = jwt.verify(token, process.env.SECRET_KEY!) as { id: string; role: string };
-    console.log("verify", verify);
     req.user = verify;
     next();
   } catch (error: any) {
-    console.log(error);
+    console.log("error", error);
     return res.status(401).json({ status: 401, message: "Unauthorized request" });
   }
 };
