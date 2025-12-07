@@ -1,21 +1,16 @@
 import { Types } from "mongoose";
-import Product, { IProductPayload } from "../models/productModel";
-import ProductSKU, {
-  IProductSku,
-  IProductSkuPayload,
-} from "../models/productSKUModel";
+import Product, { IProductPayload, IProductResponse } from "../models/productModel";
+import ProductSKU, { IProductSku, IProductSkuPayload } from "../models/productSKUModel";
 import { validateProductSKU } from "../utils/validate.util";
 
 export const getProductList = async (req, res) => {
-  // const { authorization } = req.headers
-  // const claim = jwt.decode(authorization.split(' ')[1]);
   try {
-    const products = await Product.find();
+    const products = await Product.getList(req.query);
     if (!products) {
       res.status(404).json({ status: 404, message: "No products found" });
       return;
     }
-    res.status(200).json({ status: 200, data: [...products] });
+    res.status(200).json({ status: 200, data: products });
   } catch (error) {
     res.status(400).json({ status: 404, message: error.message });
   }
@@ -36,17 +31,8 @@ export const getProductDetail = async (req, res) => {
 };
 
 export const createProduct = async (req, res) => {
-  const {
-    name,
-    mainCategory,
-    subCategory,
-    price,
-    importPrice,
-    qty,
-    sizes,
-    description,
-    unit,
-  }: IProductPayload = req.body;
+  const { name, mainCategory, subCategory, price, importPrice, qty, sizes, description, unit }: IProductPayload =
+    req.body;
   try {
     const product = await Product.storeProduct({
       name,
@@ -66,17 +52,7 @@ export const createProduct = async (req, res) => {
 };
 
 export const updateProduct = async (req, res) => {
-  const {
-    name,
-    mainCategory,
-    subCategory,
-    price,
-    importPrice,
-    qty,
-    sizes,
-    description,
-    unit,
-  } = req.body;
+  const { name, mainCategory, subCategory, price, importPrice, qty, sizes, description, unit } = req.body;
   const { id } = req.params;
   try {
     const product = await Product.updateProduct({
@@ -110,9 +86,7 @@ export const deleteProduct = async (req, res) => {
     res.status(200).json({ status: 200, message: "Product has been deleted" });
   } catch (error) {
     if (error.name === "CastError") {
-      res
-        .status(404)
-        .json({ status: 404, message: "Invalid id. No products found" });
+      res.status(404).json({ status: 404, message: "Invalid id. No products found" });
       return;
     }
     res.status(500).json({ status: 500, message: error.message });
@@ -128,9 +102,7 @@ export const updateSKU = async (req, res) => {
   }
   const { errorMessage, index } = validateProductSKU(data);
   if (errorMessage) {
-    res
-      .status(400)
-      .json({ status: 400, message: `variant at ${index}: ${errorMessage}` });
+    res.status(400).json({ status: 400, message: `variant at ${index}: ${errorMessage}` });
     return;
   }
   const mappedData = data.map((item) => ({
@@ -155,9 +127,7 @@ export const createSKU = async (req, res) => {
   }
   const { errorMessage, index } = validateProductSKU(data);
   if (errorMessage) {
-    res
-      .status(400)
-      .json({ status: 400, message: `variant at ${index}: ${errorMessage}` });
+    res.status(400).json({ status: 400, message: `variant at ${index}: ${errorMessage}` });
     return;
   }
 
@@ -170,9 +140,7 @@ export const createSKU = async (req, res) => {
 
   try {
     const productSkus = await ProductSKU.storeProductSKU(mappedData);
-    res
-      .status(200)
-      .json({ status: 200, message: "success", data: productSkus });
+    res.status(200).json({ status: 200, message: "success", data: productSkus });
   } catch (error) {
     res.status(400).json({ status: 404, message: error.message });
   }

@@ -38,23 +38,16 @@ const ProductSKUSchema = new Schema({
   },
 });
 
-ProductSKUSchema.statics.storeProductSKU = async function (
-  data: IProductSkuPayload[]
-) {
+ProductSKUSchema.statics.storeProductSKU = async function (data: IProductSkuPayload[]) {
   const productSku = await this.insertMany(data);
   return productSku;
 };
 
-ProductSKUSchema.statics.updateProductSKU = async function (
-  data: IProductSkuPayload[]
-) {
+ProductSKUSchema.statics.updateProductSKU = async function (data: IProductSkuPayload[]) {
   const _skus = data.map((item) => new ProductSku(item));
   const { insertedIds, upsertedIds } = await this.bulkSave(_skus);
   return { insertedIds, upsertedIds };
 };
 
-const ProductSku = mongoose.model<IProductSku, IProductSkuModel>(
-  "ProductSkus",
-  ProductSKUSchema
-);
+const ProductSku = mongoose.model<IProductSku, IProductSkuModel>("ProductSku", ProductSKUSchema);
 export default ProductSku;
