@@ -49,7 +49,7 @@ export interface IPaginatedResult<T> {
 export interface IProductImage {
   url: string;
   name: string;
-  id: number;
+  id: string;
 }
 interface IProductModel extends Model<IProduct> {
   getProductDetails(id: string): Promise<(IProduct & { skus: IProductSku[] }) | null>;

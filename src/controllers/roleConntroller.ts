@@ -60,9 +60,7 @@ export const deleteRole = async (req, res) => {
     res.status(200).json({ status: 200, message: "Role has been deleted" });
   } catch (error) {
     if (error.name === "CastError") {
-      res
-        .status(404)
-        .json({ status: 404, message: "Invalid id. No roles found" });
+      res.status(404).json({ status: 404, message: "Invalid id. No roles found" });
       return;
     }
     res.status(500).json({ status: 500, message: error.message });

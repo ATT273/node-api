@@ -9,6 +9,7 @@ import {
   deleteUser,
   createUser,
   updateUser,
+  resetPassword,
 } from "../controllers/userController";
 
 const router = express.Router();
@@ -22,5 +23,6 @@ router.get("/:id/assign", assignRole);
 router.delete("/:id", deleteUser);
 router.post("", createUser);
 router.put("/:id", updateUser);
+router.put("/reset-password/:id", resetPassword);
 
 export default router;

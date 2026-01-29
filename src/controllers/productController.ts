@@ -120,7 +120,7 @@ export const updateSKU = async (req, res) => {
   const mappedData = data.map((item) => {
     return {
       ...item,
-      _id: new ObjectId(item.id), // Map 'id' to '_id' for existing SKUs
+      _id: item.id ? new ObjectId(item.id) : undefined, // Map 'id' to '_id' for existing SKUs
       productId: id,
     };
   });

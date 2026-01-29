@@ -21,11 +21,18 @@ export interface IPayloadUser {
   active?: boolean;
 }
 
+export interface IPayloadResetPassword {
+  password: string;
+}
 interface IUserModel extends Model<IUser> {
   logIn(email: string, password: string): Promise<IUser | null>;
   signUp(email: string, name: string, password: string): Promise<IUser | null>;
   createUser(data: IPayloadUser): Promise<{ status: number; code: string; message: string } | null>;
   updateUser(id: string, data: IPayloadUser): Promise<{ status: number; code: string; message: string } | null>;
+  resetPassword(
+    id: string,
+    data: IPayloadResetPassword
+  ): Promise<{ status: number; code: string; message: string } | null>;
 }
 
 const UserSchema = new Schema(
@@ -142,5 +149,29 @@ UserSchema.statics.updateUser = async function (id: string, data: IPayloadUser) 
   await user.save();
   return { status: 200, code: "updated_success", message: "User updated successfully" };
 };
+
+UserSchema.statics.resetPassword = async function (id: string, data: IPayloadResetPassword) {
+  const { password } = data;
+  console.log("pass", password);
+  if (!password) {
+    const error = new HttpError("Password is required", 400, "missing_fields");
+    throw error;
+  }
+
+  const user = await this.findOne({ _id: id });
+  if (!user) {
+    const error = new HttpError("User not found", 404, "user_not_found");
+    throw error;
+  }
+
+  const salt = bcrypt.genSaltSync(10);
+  const saltPassword = bcrypt.hashSync(password, salt);
+
+  user.password = saltPassword;
+
+  await user.save();
+  return { status: 200, code: "updated_success", message: "User updated successfully" };
+};
+
 const User = mongoose.model<IUser, IUserModel>("User", UserSchema);
 export default User;
