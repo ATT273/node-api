@@ -1,4 +1,6 @@
 import express from "express";
+import http from "http";
+import { Server } from "socket.io";
 import { CONNECT_DB, GET_DB } from "./src/config/mongodb";
 import exitHook from "async-exit-hook";
 import userRouter from "./src/routes/users";
@@ -8,6 +10,7 @@ import roleRouter from "./src/routes/role";
 import inventoryRouter from "./src/routes/inventory";
 import dashboardRouter from "./src/routes/dashboard";
 import cors from "cors";
+import { setIO } from "./src/socket";
 
 const START_SERVER = async () => {
   // await CONNECT_DB();
@@ -18,7 +21,7 @@ const START_SERVER = async () => {
   app.use(
     cors({
       origin: "http://localhost:3000", // Allow only your frontend's origin
-    })
+    }),
   );
 
   // middleware
@@ -31,7 +34,26 @@ const START_SERVER = async () => {
   app.use("/api/inventories", inventoryRouter);
   app.use("/api/dashboard", dashboardRouter);
 
-  app.listen(port, host, () => {
+  const httpServer = http.createServer(app);
+  const io = new Server(httpServer, {
+    cors: {
+      origin: "*",
+      methods: ["GET", "POST"],
+      credentials: true,
+    },
+  });
+
+  setIO(io);
+
+  io.on("connection", (socket) => {
+    console.log("✅ Client connected");
+
+    socket.on("disconnect", () => {
+      console.log("❌ Client disconnected");
+    });
+  });
+
+  httpServer.listen(port, host, () => {
     console.log(`Server is running on http://${host}:${port}`);
   });
 

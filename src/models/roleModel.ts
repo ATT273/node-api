@@ -81,7 +81,6 @@ RoleSchema.statics.updateRole = async function ({ description, name, permissions
   role.active = active;
   role.permissions = permissions;
   return await role.save().then((updatedRole) => {
-    console.log("updatedRole", updatedRole);
     return updatedRole;
   });
 };

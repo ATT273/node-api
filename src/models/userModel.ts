@@ -31,7 +31,7 @@ interface IUserModel extends Model<IUser> {
   updateUser(id: string, data: IPayloadUser): Promise<{ status: number; code: string; message: string } | null>;
   resetPassword(
     id: string,
-    data: IPayloadResetPassword
+    data: IPayloadResetPassword,
   ): Promise<{ status: number; code: string; message: string } | null>;
 }
 
@@ -67,7 +67,7 @@ const UserSchema = new Schema(
       default: false,
     },
   },
-  { timestamps: true }
+  { timestamps: true },
 );
 
 UserSchema.statics.signUp = async function (name, email, password) {
@@ -152,7 +152,6 @@ UserSchema.statics.updateUser = async function (id: string, data: IPayloadUser) 
 
 UserSchema.statics.resetPassword = async function (id: string, data: IPayloadResetPassword) {
   const { password } = data;
-  console.log("pass", password);
   if (!password) {
     const error = new HttpError("Password is required", 400, "missing_fields");
     throw error;

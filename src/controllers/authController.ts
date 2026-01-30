@@ -26,13 +26,14 @@ const logIn = async (req: Request, res: Response): Promise<void> => {
     const user = await User.logIn(email, password);
     if (!user) throw new Error("Invalid email or password");
     const role = user.roleCode ? await Role.findRoleByCode(user.roleCode) : ({} as IRole);
-
     const accessToken = await createJWT(user);
     const data = {
       email,
       name: user.name,
       id: user._id,
       permissions: role.permissions,
+      roleCode: user.roleCode,
+      roleActive: role?.active,
       accessToken,
     };
     res.status(200).json({ data, status: 200 });
