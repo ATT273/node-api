@@ -191,3 +191,13 @@ export const updateUser = async (req: Request, res: Response): Promise<void> => 
     res.status(500).json({ data: { status: 500, message: error.message, code: "internal_server_error" } });
   }
 };
+export const resetPassword = async (req: Request, res: Response): Promise<void> => {
+  const data = req.body;
+  const { id } = req.params;
+  try {
+    const user = await User.resetPassword(id, data);
+    res.status(200).json({ data: user });
+  } catch (error: any) {
+    res.status(500).json({ data: { status: 500, message: error.message, code: "internal_server_error" } });
+  }
+};

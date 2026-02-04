@@ -20,6 +20,7 @@ interface IRoleModel extends Model<IRole> {
   getRoleDetail(id: string): Promise<IRole | null>;
   storeRole(role: IRolePayload): Promise<IRole | null>;
   updateRole(role: IRolePayload): Promise<IRole | null>;
+  findRoleByCode(code: string): Promise<IRole | null>;
 }
 
 const RoleSchema = new Schema(
@@ -47,16 +48,10 @@ const RoleSchema = new Schema(
       default: "{}",
     },
   },
-  { timestamps: true }
+  { timestamps: true },
 );
 
-RoleSchema.statics.storeRole = async function ({
-  name,
-  code,
-  active,
-  permissions,
-  description,
-}) {
+RoleSchema.statics.storeRole = async function ({ name, code, active, permissions, description }) {
   if (!name || !code) {
     throw new Error("Name and code are required");
   }
@@ -76,13 +71,7 @@ RoleSchema.statics.storeRole = async function ({
   return role;
 };
 
-RoleSchema.statics.updateRole = async function ({
-  description,
-  name,
-  permissions,
-  active,
-  id,
-}) {
+RoleSchema.statics.updateRole = async function ({ description, name, permissions, active, id }) {
   const role = await this.findById(id);
   if (!role) {
     throw new Error("No roles found");
@@ -91,9 +80,23 @@ RoleSchema.statics.updateRole = async function ({
   role.description = description;
   role.active = active;
   role.permissions = permissions;
-  await role.save().then((updatedRole) => {
+  return await role.save().then((updatedRole) => {
     return updatedRole;
   });
+};
+
+RoleSchema.statics.findRoleByCode = async function (code: string) {
+  const role = await this.findOne({
+    code,
+  });
+  if (!role) {
+    throw new Error("No roles found");
+  }
+  const name = role.name;
+  const description = role.description;
+  const active = role.active;
+  const permissions = role.permissions;
+  return { name, description, active, permissions };
 };
 const Role = mongoose.model<IRole, IRoleModel>("Role", RoleSchema);
 export default Role;

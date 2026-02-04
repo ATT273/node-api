@@ -1,4 +1,5 @@
 import Role from "../models/roleModel";
+import { getIO } from "../socket";
 
 export const getRoleList = async (req, res) => {
   try {
@@ -34,6 +35,7 @@ export const updateRole = async (req, res) => {
   const { name, description, active, permissions, code } = req.body;
   const { id } = req.params;
   try {
+    const io = getIO();
     const role = await Role.updateRole({
       id,
       name,
@@ -41,6 +43,11 @@ export const updateRole = async (req, res) => {
       code,
       active,
       permissions,
+    });
+    io.emit("role_updated", {
+      roleId: id,
+      role: role,
+      message: "Role has been updated",
     });
     res.status(200).json({ status: 200, message: "success", data: role });
   } catch (error) {
@@ -60,9 +67,7 @@ export const deleteRole = async (req, res) => {
     res.status(200).json({ status: 200, message: "Role has been deleted" });
   } catch (error) {
     if (error.name === "CastError") {
-      res
-        .status(404)
-        .json({ status: 404, message: "Invalid id. No roles found" });
+      res.status(404).json({ status: 404, message: "Invalid id. No roles found" });
       return;
     }
     res.status(500).json({ status: 500, message: error.message });

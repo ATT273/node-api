@@ -1,5 +1,5 @@
 import mongoose, { Schema, Document, Model } from "mongoose";
-import { IProductImage } from "./productModel";
+import { IProductSkuImage, IProductSkuImagePayload } from "../types/product-sku.types";
 
 export interface IProductSku extends Document {
   id: string;
@@ -7,6 +7,7 @@ export interface IProductSku extends Document {
   price: number;
   qty: number;
   sku: string;
+  images: IProductSkuImage[];
 }
 
 export interface IProductSkuPayload {
@@ -16,7 +17,7 @@ export interface IProductSkuPayload {
   qty: number;
   sku: string;
   size?: string;
-  images: IProductImage[];
+  images: IProductSkuImagePayload[];
 }
 export interface IProductSkuUpsertData extends Omit<IProductSkuPayload, "id"> {
   _id?: mongoose.Types.ObjectId; // Use _id for existing documents
@@ -40,12 +41,22 @@ const ProductSKUSchema = new Schema({
     type: Number,
     required: true,
   },
+  images: {
+    type: [
+      {
+        id: { type: String, required: true },
+        name: { type: String, required: true },
+        url: { type: String, required: true },
+        productImageId: { type: Number, required: true },
+      },
+    ],
+  },
 });
 
-ProductSKUSchema.statics.storeProductSKU = async function (data: IProductSkuPayload[]) {
-  const productSku = await this.insertMany(data);
-  return productSku;
-};
+// ProductSKUSchema.statics.storeProductSKU = async function (data: IProductSkuPayload[]) {
+//   const productSku = await this.insertMany(data);
+//   return productSku;
+// };
 
 ProductSKUSchema.statics.updateProductSKU = async function (data: IProductSkuUpsertData[]) {
   const _skus = data.map((item) => {
@@ -70,5 +81,5 @@ ProductSKUSchema.statics.updateProductSKU = async function (data: IProductSkuUps
   return { insertedIds, upsertedIds };
 };
 
-const ProductSku = mongoose.model<IProductSku, IProductSkuModel>("ProductSkus", ProductSKUSchema);
+const ProductSku = mongoose.model<IProductSku, IProductSkuModel>("ProductSku", ProductSKUSchema);
 export default ProductSku;
